@@ -1,3 +1,4 @@
+import 'package:RecipeApp/widgets/meal_item.dart';
 import 'package:flutter/material.dart';
 
 import './screens/categories_screen.dart';
@@ -25,6 +26,7 @@ class _MyAppState extends State<MyApp> {
   };
 
   List<Meal> _availableMeals = DUMMY_MEALS;
+  List<Meal> _favriteMeals = [];
 
   void _setFliter(Map<String, bool> filterData) {
     setState(() {
@@ -46,6 +48,26 @@ class _MyAppState extends State<MyApp> {
         return true;
       }).toList();
     });
+  }
+
+  void _toggleFavorite(String mealId) {
+    final existingIndex = _favriteMeals.indexWhere((meal) => meal.id == mealId);
+
+    if (existingIndex >= 0) {
+      setState(() {
+        _favriteMeals.removeAt(existingIndex);
+      });
+    } else {
+      setState(() {
+        _favriteMeals.add(
+          DUMMY_MEALS.firstWhere((meal) => meal.id == mealId),
+        );
+      });
+    }
+  }
+
+  bool _isMealFavorite(String id) {
+    return _favriteMeals.any((meal) => meal.id == id);
   }
 
   @override
@@ -73,10 +95,11 @@ class _MyAppState extends State<MyApp> {
             )),
       ),
       routes: {
-        '/': (ctx) => TabsScreen(),
+        '/': (ctx) => TabsScreen(_favriteMeals),
         CategoryMealsScreen.screenName: (ctx) =>
             CategoryMealsScreen(_availableMeals),
-        MealDetailScreen.screenName: (ctx) => MealDetailScreen(),
+        MealDetailScreen.screenName: (ctx) =>
+            MealDetailScreen(_toggleFavorite, _isMealFavorite),
         FiltersScreen.screenName: (ctx) => FiltersScreen(_filter, _setFliter),
       },
       // for safety if navgation looking for unknow name
